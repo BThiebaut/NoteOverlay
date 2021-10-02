@@ -1,0 +1,77 @@
+{
+  "name": "notesoverlay",
+  "productName": "notesoverlay",
+  "version": "1.0.0",
+  "description": "My Electron application description",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "start": "tsc && electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
+  },
+  "files": [
+    "dist/index.d.ts",
+    "dist/index.js",
+    "dist/index.js.map"
+  ],
+  "keywords": [],
+  "author": {
+    "name": "Benjamin Thiebaut",
+    "email": "benji.thiebaut@gmail.com"
+  },
+  "license": "MIT",
+  "config": {
+    "forge": {
+      "packagerConfig": {},
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "notesoverlay"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ]
+    }
+  },
+  "dependencies": {
+    "electron-overlay-window": "^2.0.1",
+    "electron-squirrel-startup": "^1.0.0",
+    "interactjs": "^1.10.11",
+    "node-gyp-build": "4.x.x",
+    "throttle-debounce": "3.x.x"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.61",
+    "@electron-forge/maker-deb": "^6.0.0-beta.61",
+    "@electron-forge/maker-rpm": "^6.0.0-beta.61",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.61",
+    "@electron-forge/maker-zip": "^6.0.0-beta.61",
+    "@types/node": "^16.10.2",
+    "electron": "10.x.x",
+    "prebuildify": "4.x.x",
+    "ts-node": "9.x.x",
+    "typescript": "4.x.x"
+  },
+  "gypfile": true,
+  "engines": {
+    "node": ">= 12"
+  },
+  "peerDependencies": {
+    "electron": ">= 10"
+  }
+}

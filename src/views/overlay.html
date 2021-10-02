@@ -1,0 +1,154 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>overlay</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="../assets/libs/font-awesome-4.7.0/css/font-awesome.min.css">"
+  <link rel="stylesheet" href="../assets/css/overlay.css">"
+</head>
+<body style="padding: 0; margin: 0;">
+  <div id="notes-container"></div>
+  <div id="settings-container" class="d-none draggable">
+    <div class="nav grid-2">
+      <div class="map-menu">
+        <select name="notes-list">
+          <option selected disabled value="0">Chargement des notes...</option>
+        </select>
+      </div>
+      <div class="action-menu">
+        <div><a href="javascript:void(0);" class="btn default btn-add">+ Ajouter une note</a></div>
+      </div>
+    </div>
+    <div class="note-settings">
+      <div class="note-nav grid-5">
+        <div class="input-group">
+          <label>Titre</label>
+          <input type="text" name="note-title">
+        </div>
+        <div class="input-group">
+          <label>Couleur du texte</label>
+          <input type="color" name="note-font-color" value="#FFFFFF">
+        </div>
+        <div class="input-group">
+          <label>Taille du texte</label>
+          <input type="number" min="1" max="100" name="note-font-size" value="16">
+        </div>
+        <div class="input-group">
+          <label>Couleur du fond</label>
+          <input type="color" name="note-back-color" value="#000000">
+        </div>
+        <div class="input-group">
+          <label>Transparence du fond</label>
+          <input type="range" min="0" max="100" name="note-back-transparancy" value="80">
+        </div>
+        <div class="input-group">
+          <label>Visible</label>
+          <input type="checkbox" name="note-visible">
+        </div>
+      </div>
+      <div id="editor-container">
+        <textarea id="editor" name="note-content-text"></textarea>
+      </div>
+      <div id="footer-container" class="grid-2">
+        <div>
+          <button class="btn success btn-save" type="button">Sauvegarder</button>
+        </div>
+        <div class="text-right">
+          <button class="btn warning btn-cancel" type="button">Annuler</button>
+          <button class="btn danger btn-delete" type="button">Supprimer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/libs/tinymce/tinymce.min.js"></script>
+  <script src="../assets/libs/tinymce/plugins/autoresize/plugin.min.js"></script>
+  <script src="../assets/js/Overlay.js"></script>
+  <script type="text/javascript">
+    const electron = require('electron');
+    const ipc = electron.ipcRenderer;
+    const interact = require('interactjs');
+    const overlay = new Overlay();
+
+    electron.ipcRenderer.on('toggle-settings', (e, state) => {
+      overlay.toggleSettings();
+      ipc.send('toggle-mouse-events', overlay.isSettingsVisible);
+    });
+
+    electron.ipcRenderer.on('toggle-mouse', (e, state) => {
+      overlay.toggleMouse();
+      ipc.send('toggle-mouse-events', overlay.isMouseVisible);
+    });
+
+    electron.ipcRenderer.on('config-loaded', (e, configs) => {
+      overlay.load(configs);
+    });
+
+    tinymce.init({
+      selector:'#editor', 
+      plugins: 'autoresize'
+    });
+
+    function dragMoveListener (event) {
+      var target = event.target
+      // keep the dragged position in the data-x/data-y attributes
+      var x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
+      var y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
+    
+      // translate the element
+      target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
+    
+      // update the posiion attributes
+      target.setAttribute('data-x', x)
+      target.setAttribute('data-y', y)
+    }
+
+    interact('.draggable')
+      .draggable({
+        inertia: false,
+        listeners: {
+          move: dragMoveListener,
+          end (event) {
+            // todo : save position in config file
+          }
+        }
+      })
+      .resizable({
+        edges: { left: true, right: true, bottom: true, top: true },
+        listeners: {
+          move (event) {
+            var target = event.target
+            var x = (parseFloat(target.getAttribute('data-x')) || 0)
+            var y = (parseFloat(target.getAttribute('data-y')) || 0)
+    
+            // update the element's style
+            target.style.width = event.rect.width + 'px'
+            target.style.height = event.rect.height + 'px'
+
+            let tinyContainer = document.getElementById('editor-container');
+            let tinyEditor = tinymce.get('editor');
+            window.tinyContainer = tinyContainer;
+            window.tinyEditor = tinyEditor;
+            //tinyEditor.theme.resizeTo(tinyContainer.clientWidth, tinyContainer.clientHeight);
+
+    
+            // translate when resizing from top or left edges
+            x += event.deltaRect.left
+            y += event.deltaRect.top
+    
+            target.style.transform = 'translate(' + x + 'px,' + y + 'px)'
+    
+            target.setAttribute('data-x', x)
+            target.setAttribute('data-y', y)
+          }
+        },
+        modifiers: [
+        // minimum size
+        interact.modifiers.restrictSize({
+          min: { width: 300, height: 200 }
+        })
+      ],
+      });
+
+  </script>
+</body>
